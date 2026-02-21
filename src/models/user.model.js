@@ -205,7 +205,7 @@ const userSchema = new mongoose.Schema(
         "Middle Eastern",
         "Other",
       ],
-      default: "",
+      default: undefined,
     },
     paternalEthnicity: {
       type: String,
@@ -218,7 +218,7 @@ const userSchema = new mongoose.Schema(
         "Middle Eastern",
         "NA",
       ],
-      default: "",
+      default: undefined,
     },
     maternalEthnicity: {
       type: String,
@@ -231,7 +231,7 @@ const userSchema = new mongoose.Schema(
         "Middle Eastern",
         "NA",
       ],
-      default: "",
+      default: undefined,
     },
 
     // Siblings
@@ -278,7 +278,7 @@ const userSchema = new mongoose.Schema(
     shareStory: {
       type: String,
       enum: ["Yes", "No"],
-      default: "",
+      default: undefined,
     },
     storyHighlight: {
       type: storyHighlightSchema,

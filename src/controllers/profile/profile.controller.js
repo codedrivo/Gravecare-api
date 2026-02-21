@@ -53,8 +53,12 @@ const updateProfile = catchAsync(async (req, res, next) => {
     if (req.files.profileimageurl) {
       req.body.profileimageurl = req.files.profileimageurl[0].location;
     }
+    if (!req.body.referenceImages) {
+      req.body.referenceImages = {};
+    }
 
     // Map uploaded files to reference images
+
     if (req.files.earlyChildhoodImage) {
       req.body.referenceImages.earlyChildhood = req.files.earlyChildhoodImage[0].location;
     }
