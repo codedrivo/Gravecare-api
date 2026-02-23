@@ -66,12 +66,13 @@ const lifeStageLocationSchema = new mongoose.Schema(
   { _id: false }
 );
 
-// ================= SIBLINGS SCHEMA =================
+// ================= SIBLINGS SCHEMA - UPDATED =================
+// Changed from 'type' to 'gender' to match React frontend
 const siblingSchema = new mongoose.Schema(
   {
-    type: {
+    gender: {
       type: String,
-      enum: ["Brother", "Sister"],
+      enum: ["Male", "Female", "Other"],
       required: true,
     },
     order: {
@@ -273,13 +274,13 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    // FIXED: Music Genres - removed enum validation
+    // Music Genres
     musicGenres: {
       type: [String],
       default: [],
     },
 
-    // Siblings
+    // Siblings - Using updated schema with gender
     siblingsCount: {
       type: Number,
       min: 0,
@@ -376,7 +377,7 @@ userSchema.pre("save", function (next) {
     this.maternalEthnicityOther = '';
   }
 
-  // FIXED: Filter out empty strings from musicGenres
+  // Filter out empty strings from musicGenres
   if (this.musicGenres && Array.isArray(this.musicGenres)) {
     this.musicGenres = this.musicGenres.filter(genre => genre && genre.trim() !== '');
   }
