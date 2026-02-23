@@ -147,6 +147,7 @@ const updateProfile = catchAsync(async (req, res, next) => {
   const user = await service.updateUser(req.user._id, req.body);
 
   res.status(200).send({
+    success: true,
     message: "Profile updated successfully",
     data: { user },
   });
