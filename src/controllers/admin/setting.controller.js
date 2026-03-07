@@ -26,29 +26,7 @@ const getSettings = catchAsync(async (req, res, next) => {
   res.status(200).json({ message: 'Get General Settings', settings });
 });
 
-const saveTimeSetting = catchAsync(async (req, res, next) => {
-  const settingId = req.params.id;
-  const { pauseTime } = req.body;
-
-  if (pauseTime === undefined || pauseTime === null) {
-    return res.status(400).json({ error: 'pauseTime is required' });
-  }
-
-  const now = new Date();
-  now.setMinutes(now.getMinutes() + Number(pauseTime));
-
-  const data = {
-    pauseTime: now
-  };
-
-  await service.saveTimeSetting(settingId, data);
-  res
-    .status(200)
-    .send({ status: 200, message: 'Settings saved successfully', data: data });
-});
-// deep
 module.exports = {
   saveSettings,
-  getSettings,
-  saveTimeSetting,
+  getSettings
 };

@@ -4,69 +4,33 @@ const settingsSchema = new mongoose.Schema(
   {
     sitelogo: {
       type: String,
-      required: true,
+      default: '',
     },
     footerlogo: {
       type: String,
-      required: true,
-    },
-
-    footerContent: {
-      type: String,
-      required: false,
+      default: '',
     },
     copyright: {
       type: String,
-      required: false,
     },
     adminEmail: {
       type: String,
-      required: false,
       default: '',
     },
     twitterUrl: {
       type: String,
-      required: false,
       default: '',
     },
     instagramUrl: {
       type: String,
-      required: false,
       default: '',
     },
     linkedinUrl: {
       type: String,
-      required: false,
       default: '',
     },
-    contactphone: {
+    tiktok: {
       type: String,
-      required: false,
-      default: '',
-    },
-    contactemail: {
-      type: String,
-      required: false,
-      default: '',
-    },
-    contactaddress: {
-      type: String,
-      required: false,
-      default: '',
-    },
-    auctionDate: {
-      type: Date,
-      required: false,
-      default: '',
-    },
-    pauseTime: {
-      type: Date,
-      required: false,
-      default: '',
-    },
-    pauseStatus: {
-      type: Boolean,
-      required: false,
       default: '',
     },
   },

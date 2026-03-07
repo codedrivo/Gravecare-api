@@ -19,10 +19,5 @@ router.patch(
   controller.saveSettings,
 );
 router.get('/getsettings', controller.getSettings);
-router.patch(
-  '/saveTimeSetting/:id?',
-  validator.body(validationSettingSchema.saveTimeSetting),
-  controller.saveTimeSetting,
-);
 
 module.exports = router;

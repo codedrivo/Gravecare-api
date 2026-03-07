@@ -7,23 +7,12 @@ const saveSetting = Joi.object({
   footerContent: Joi.string().optional(),
   copyright: Joi.string().optional(),
   adminEmail: Joi.optional(),
+  instagramUrl: Joi.optional(),
   twitterUrl: Joi.optional(),
   linkedinUrl: Joi.optional(),
-  instagramUrl: Joi.optional(),
-  contactphone: Joi.optional(),
-  contactemail: Joi.optional(),
-  contactaddress: Joi.optional(),
-  auctionDate: Joi.optional(),
-  auctionTime: Joi.optional(),
-  pauseTime: Joi.optional(),
-  pauseStatus: Joi.optional(),
-});
-const saveTimeSetting = Joi.object({
-  pauseTime: Joi.optional(),
-  pauseStatus: Joi.optional(),
+  tiktok: Joi.optional()
 });
 
 module.exports = {
-  saveSetting,
-  saveTimeSetting,
+  saveSetting
 };
