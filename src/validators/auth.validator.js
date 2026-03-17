@@ -54,26 +54,26 @@ const forgot = Joi.object({
 
 const reset = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().required(),
+  newPassword: Joi.string().required(),
 });
 
 const resetAdmin = Joi.object({
   email: Joi.string().email().required(),
-  otp: Joi.string().max(4).min(4).required(),
+  otp: Joi.string().max(6).min(6).required(),
   password: Joi.string().required(),
 });
 
 const verify = Joi.object({
   email: Joi.string().email(),
   phone: Joi.string().pattern(/^[0-9]{10}$/),
-  otp: Joi.string().length(4).required(),
+  otp: Joi.string().length(6).required(),
 })
   .xor("email", "phone") // only one allowed
   .required();
 
 const verifyCtg = Joi.object({
   email: Joi.string().email().required(),
-  otp: Joi.string().max(4).min(4).required(),
+  otp: Joi.string().max(6).min(6).required(),
 });
 
 const tokens = Joi.object({

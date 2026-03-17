@@ -66,7 +66,7 @@ router.post(
   controller.verify,
 );
 
-router.patch(
+router.post(
   '/reset-password',
   validator.body(validationSchema.reset),
   controller.reset,

@@ -15,16 +15,15 @@ const sendSendgridEmail = async (to, subject, data, tid) => {
 
 const sendSGEmail = async (mailData) => {
   sgMail.setApiKey(config.email.sg.sendGridApiKey);
-  sgMail.send(mailData).then(
-    () => {
-      logger.info('mail sent');
-    },
-    (error) => {
-      if (error.response) {
-        logger.error(error.response.body);
-      }
-    },
-  );
+  try {
+    await sgMail.send(mailData);
+    logger.info('mail sent');
+  } catch (error) {
+    if (error.response) {
+      logger.error(error.response.body);
+    }
+    throw error;
+  }
 };
 
 module.exports = {

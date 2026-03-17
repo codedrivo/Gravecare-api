@@ -16,7 +16,9 @@ const notifyAdmin = catchAsync(async (req, res) => {
 
 // Register
 const register = catchAsync(async (req, res, next) => {
-  await service.createUser(req.body);
+  const user = await service.createUser(req.body);
+
+  await otps.sendEmailOTP(user.email, "email", "d-1c767f05cc6249708e590c9298915074");
   res.status(201).send({
     message: 'Registration successful, please login',
   });
@@ -112,8 +114,8 @@ const reset = catchAsync(async (req, res, next) => {
   if (!user) {
     throw new ApiError('User Not Found', 404);
   }
-  await service.changePassword(user.email, req.body.password);
-  res.status(200).send({ message: 'Password reset Successfull' });
+  await service.changePassword(user.email, req.body.newPassword);
+  res.status(200).send({ message: 'Password reset successfully' });
 });
 
 // Refresh token
@@ -152,7 +154,7 @@ const forgotPasswordResend = catchAsync(async (req, res, next) => {
   if (!user) {
     throw new ApiError('User Not Found', 404);
   }
-  await otps.generateOtp(user, 'resend');
+  await otps.sendEmailOTP(user.email, 'email', 'd-c60beffa1f45430eb5ed565009adfef6');
   res.status(200).send({ message: 'OTP Sent to the email address' });
 });
 
