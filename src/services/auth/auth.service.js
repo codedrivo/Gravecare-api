@@ -21,8 +21,16 @@ const loginUser = async (email, password) => {
     throw new ApiError('User not found', 404);
   }
 
+   if (user.role !== "user") {
+    throw new ApiError("This credential does not belong to a user", 403);
+  }
+
   if (!(await user.isPasswordMatch(password))) {
     throw new ApiError('Invalid email or password', 401);
+  }
+
+  if (!user.isEmailVerified) {
+    throw new ApiError('Please verify your email before logging in', 403);
   }
   user.online = true;
   await user.save();

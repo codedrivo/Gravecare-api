@@ -28,18 +28,18 @@ const register = catchAsync(async (req, res, next) => {
 const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
   // Find user
-  const userRole = await User.findOne({ email });
-  if (!userRole) {
-    return res.status(401).send({
-      message: "Invalid email or password",
-    });
-  }
+  // const userRole = await User.findOne({ email });
+  // if (!userRole) {
+  //   return res.status(401).send({
+  //     message: "Invalid email or password",
+  //   });
+  // }
 
-  if (userRole.role !== "user") {
-    return res.status(403).send({
-      message: "This credential does not belong to a user",
-    });
-  }
+  // if (userRole.role !== "user") {
+  //   return res.status(403).send({
+  //     message: "This credential does not belong to a user",
+  //   });
+  // }
 
   // Login service (password check etc)
   const user = await service.loginUser(email, password);
@@ -103,6 +103,17 @@ const verify = catchAsync(async (req, res, next) => {
     throw new ApiError('Something is wrong', 400);
   }
   await otps.checkVerifyOtp(identifier, otp, type);
+
+  if (type === "email") {
+    const user = await User.findOne({ email: identifier });
+
+    if (!user) {
+      throw new ApiError("User not found", 404);
+    }
+
+    user.isEmailVerified = true;
+    await user.save();
+  }
   res.status(200).send({
     message: 'OTP verified successfully',
   });
