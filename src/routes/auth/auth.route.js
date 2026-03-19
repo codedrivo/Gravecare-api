@@ -4,7 +4,6 @@ const validator = require('express-joi-validation').createValidator({
   passError: true,
 });
 const controller = require('../../controllers/auth/auth.controller');
-const upload = require('../../middlewares/multer.middleware');
 
 router.post(
   '/nofity-admin',
@@ -71,6 +70,8 @@ router.post(
   validator.body(validationSchema.reset),
   controller.reset,
 );
+
+router.post('/refresh-tokens', controller.refreshTokens);
 
 module.exports = router;
 

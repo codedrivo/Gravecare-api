@@ -17,30 +17,19 @@ const notifyAdmin = catchAsync(async (req, res) => {
 // Register
 const register = catchAsync(async (req, res, next) => {
   const user = await service.createUser(req.body);
-
-  await otps.sendEmailOTP(user.email, "email", "d-1c767f05cc6249708e590c9298915074");
+  const tokens = await token.generateAuthTokens(user);
   res.status(201).send({
     message: 'Registration successful, please login',
+    data: {
+      tokens,
+      user,
+    },
   });
 });
 
 // Login
 const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
-  // Find user
-  const userRole = await User.findOne({ email });
-  if (!userRole) {
-    return res.status(401).send({
-      message: "Invalid email or password",
-    });
-  }
-
-  if (userRole.role !== "user") {
-    return res.status(403).send({
-      message: "This credential does not belong to a user",
-    });
-  }
-
   // Login service (password check etc)
   const user = await service.loginUser(email, password);
 
@@ -103,6 +92,16 @@ const verify = catchAsync(async (req, res, next) => {
     throw new ApiError('Something is wrong', 400);
   }
   await otps.checkVerifyOtp(identifier, otp, type);
+
+  if (type === "email") {
+    const user = await User.findOne({ email: identifier });
+
+    if (!user) {
+      throw new ApiError("User not found", 404);
+    }
+
+    await user.save();
+  }
   res.status(200).send({
     message: 'OTP verified successfully',
   });
@@ -110,11 +109,17 @@ const verify = catchAsync(async (req, res, next) => {
 
 // Reset password
 const reset = catchAsync(async (req, res, next) => {
-  const user = await service.findUserByEmail(req.body.email);
+  const { phone, otp, newPassword } = req.body;
+  const user = await service.findUserByPhone(phone);
   if (!user) {
     throw new ApiError('User Not Found', 404);
   }
-  await service.changePassword(user.email, req.body.newPassword);
+  const isVerify = await otps.isVerifyOtp(phone, otp, 'phone');
+  if (!isVerify) {
+    throw new ApiError('Please go to the Forgot Password page and request a new code.', 404);
+
+  }
+  await service.changePassword(user.email, newPassword);
   res.status(200).send({ message: 'Password reset successfully' });
 });
 
@@ -158,6 +163,8 @@ const forgotPasswordResend = catchAsync(async (req, res, next) => {
   res.status(200).send({ message: 'OTP Sent to the email address' });
 });
 
+
+
 module.exports = {
   login,
   forgotPassword,
@@ -169,5 +176,5 @@ module.exports = {
   verifyEmailOTP,
   verifyPhoneOTP,
   notifyAdmin,
-  register
+  register,
 };

@@ -37,6 +37,9 @@ const envVarsSchema = Joi.object()
     TWILIO_AUTH_TOKEN: Joi.string().description(
       'Please provide twilio auth token',
     ),
+    TWILIO_FROM_NUMBER: Joi.string().description(
+      'Please provide twilio from number',
+    ),
   })
   .unknown();
 
@@ -71,5 +74,10 @@ module.exports = {
   },
   s3: {
     S3_BUCKET_PATH: envVars.S3_BUCKET_PATH,
+  },
+  twilio: {
+    TWILIO_ACCOUNT_SID: envVars.TWILIO_ACCOUNT_SID,
+    TWILIO_AUTH_TOKEN: envVars.TWILIO_AUTH_TOKEN,
+    TWILIO_FROM_NUMBER: envVars.TWILIO_FROM_NUMBER
   },
 };

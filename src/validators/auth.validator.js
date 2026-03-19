@@ -40,6 +40,7 @@ const register = Joi.object({
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
   email: Joi.string().email().required(),
+  phone: Joi.string().required(),
   password: Joi.string().required(),
 });
 
@@ -53,7 +54,8 @@ const forgot = Joi.object({
 });
 
 const reset = Joi.object({
-  email: Joi.string().email().required(),
+  phone: Joi.string().required(),
+  otp: Joi.string().max(6).min(6).required(),
   newPassword: Joi.string().required(),
 });
 

@@ -4,6 +4,12 @@ const User = require('../../models/user.model');
 const crypto = require('crypto');
 const email = require('../email/email.service');
 const config = require('../../config/config');
+const twilio = require('twilio');
+
+const client = twilio(
+  config.twilio.TWILIO_ACCOUNT_SID,
+  config.twilio.TWILIO_AUTH_TOKEN
+);
 
 function generateSecureOTP() {
   const digits = '0123456789';
@@ -44,8 +50,8 @@ const sendPhoneOTP = async (phone) => {
     console.log(otp)
     await client.messages.create({
       body: `Your verification code is ${otp}. It will expire in 5 minutes.`,
-      from: "+18885703324",
-      to: "+12816509746"
+      from: config.twilio.TWILIO_FROM_NUMBER,
+      to: "+18777804236"
       //to: phone,
     });
     return true;
@@ -89,6 +95,15 @@ const checkVerifyOtp = async (identifier, otp, type) => {
   const normalizedIdentifier = identifier.toLowerCase();
   const record = await Otp.findOne({ identifier: normalizedIdentifier, otp, type, is_verified: false });
   if (!record) throw new ApiError('Invalid or expired OTP', 400);
+  record.is_verified = true;
+  await record.save();
+  return true;
+};
+
+const isVerifyOtp = async (identifier, otp, type) => {
+  const normalizedIdentifier = identifier.toLowerCase();
+  const record = await Otp.findOne({ identifier: normalizedIdentifier, otp, type, is_verified: true });
+  if (!record) throw new ApiError('Please go to the Forgot Password page and request a new code.', 400);
   await Otp.deleteOne({ _id: record._id });
   return true;
 };
@@ -145,7 +160,7 @@ const resendOtp = async (user) => {
 };
 
 const verifyOtp = async (email, otp) => {
-  const otpindb = await Otp.findOne({identifier: email, otp });
+  const otpindb = await Otp.findOne({ identifier: email, otp });
 
   if (!otpindb) {
     throw new ApiError('Invalid OTP', 400);
@@ -177,5 +192,6 @@ module.exports = {
   sendEmailOTP,
   checkVerifyOtp,
   sendPhoneOTP,
+  isVerifyOtp,
   sendSupportEmail
 };
