@@ -5,10 +5,24 @@ const ApiError = require('../../helpers/apiErrorConverter');
 
 // Create new user
 const createUser = async (data) => {
-  const checkEmail = await User.findOne({ email: data.email });
-  if (checkEmail) {
-    throw new ApiError('Email already exists', 400);
+  // Check for existing email
+  const existingUser = await User.findOne({
+    $or: [
+      { email: data.email },
+      ...(data.phone ? [{ phone: data.phone }] : [])
+    ]
+  });
+
+  if (existingUser) {
+    if (existingUser.email === data.email) {
+      throw new ApiError('Email already exists', 400);
+    }
+    if (data.phone && existingUser.phone === data.phone) {
+      throw new ApiError('Phone number already exists', 400);
+    }
   }
+
+  // Create user
   const user = await User.create(data);
   return getUserById(user._id);
 };
@@ -19,6 +33,10 @@ const loginUser = async (email, password) => {
 
   if (!user) {
     throw new ApiError('User not found', 404);
+  }
+
+  if (user.role !== "user") {
+    throw new ApiError("This credential does not belong to a user", 403);
   }
 
   if (!(await user.isPasswordMatch(password))) {
@@ -32,6 +50,11 @@ const loginUser = async (email, password) => {
 // Find user by id
 const findUserByEmail = async (email) => {
   return User.findOne({ email });
+};
+
+// Find user by id
+const findUserByPhone = async (phone) => {
+  return User.findOne({ phone });
 };
 
 // Find user by id

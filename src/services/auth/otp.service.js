@@ -4,11 +4,17 @@ const User = require('../../models/user.model');
 const crypto = require('crypto');
 const email = require('../email/email.service');
 const config = require('../../config/config');
+const twilio = require('twilio');
+
+const client = twilio(
+  config.twilio.TWILIO_ACCOUNT_SID,
+  config.twilio.TWILIO_AUTH_TOKEN
+);
 
 function generateSecureOTP() {
   const digits = '0123456789';
   let otp = '';
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 6; i++) {
     const randomIndex = crypto.randomInt(0, digits.length);
     otp += digits[randomIndex];
   }
@@ -44,8 +50,8 @@ const sendPhoneOTP = async (phone) => {
     console.log(otp)
     await client.messages.create({
       body: `Your verification code is ${otp}. It will expire in 5 minutes.`,
-      from: "+18885703324",
-      to: "+12816509746"
+      from: config.twilio.TWILIO_FROM_NUMBER,
+      to: "+18777804236"
       //to: phone,
     });
     return true;
@@ -60,12 +66,7 @@ const sendEmailOTP = async (userEmail, type, tempID) => {
       identifier: userEmail,
       type: type,
     });
-    return email.sendSendgridEmail(
-      userEmail,
-      'Email Verification',
-      { otp: otp },
-      tempID,
-    );
+    return email.sendSendgridEmail(userEmail, 'Email Verification', { otp: otp }, tempID);
   } catch (e) {
     throw new ApiError(e.message, 500);
   }
@@ -91,37 +92,42 @@ const sendSupportEmail = async (userEmail, tempID, data) => {
 };
 
 const checkVerifyOtp = async (identifier, otp, type) => {
-  const record = await Otp.findOne({ identifier, otp, type, is_verified: false });
-  if (!record) throw new ApiError('Invalid or expired OTP');
+  const normalizedIdentifier = identifier.toLowerCase();
+  const record = await Otp.findOne({ identifier: normalizedIdentifier, otp, type, is_verified: false });
+  if (!record) throw new ApiError('Invalid or expired OTP', 400);
+  record.is_verified = true;
+  await record.save();
+  return true;
+};
+
+const isVerifyOtp = async (identifier, otp, type) => {
+  const normalizedIdentifier = identifier.toLowerCase();
+  const record = await Otp.findOne({ identifier: normalizedIdentifier, otp, type, is_verified: true });
+  if (!record) throw new ApiError('Please go to the Forgot Password page and request a new code.', 400);
   await Otp.deleteOne({ _id: record._id });
   return true;
 };
 
 const generateOtp = async (user, type) => {
-  const otp = await Otp.create({ otp: generateSecureOTP(), email: user.email });
+  await Otp.deleteMany({ identifier: user.email, type: 'email' });
+
+  const otp = await Otp.create({ otp: generateSecureOTP(), identifier: user.email, type: 'email', is_verified: false });
   if (!otp) {
     throw new ApiError('Error In OTP generations', 500);
   }
-  if (type == 'emailVerify') {
+  if (type == 'emailVerify' || type == 'resend') {
     await email.sendSendgridEmail(
       user.email,
       'Email Verification',
-      otp.otp,
-      'd-92ce28b7f6664d5a9f53bb53003609f3',
-    );
-  } else if (type == 'resend') {
-    await email.sendSendgridEmail(
-      user.email,
-      'Email Verification',
-      otp.otp,
-      'd-92ce28b7f6664d5a9f53bb53003609f3',
+      { otp: otp.otp },
+      'd-1c767f05cc6249708e590c9298915074',
     );
   } else {
     await email.sendSendgridEmail(
       user.email,
       'Password Reset OTP',
-      otp.otp,
-      'd-92ce28b7f6664d5a9f53bb53003609f3',
+      { otp: otp.otp },
+      'd-c60beffa1f45430eb5ed565009adfef6',
     );
   }
 };
@@ -154,7 +160,7 @@ const resendOtp = async (user) => {
 };
 
 const verifyOtp = async (email, otp) => {
-  const otpindb = await Otp.findOne({ email, otp });
+  const otpindb = await Otp.findOne({ identifier: email, otp });
 
   if (!otpindb) {
     throw new ApiError('Invalid OTP', 400);
@@ -165,7 +171,7 @@ const verifyOtp = async (email, otp) => {
   const currentTime = new Date();
 
   const timeDifferenceInMilliseconds = currentTime - createdAt;
-  const timeDifferenceInMinutes = timeDifferenceInMilliseconds / (1000 * 600);
+  const timeDifferenceInMinutes = timeDifferenceInMilliseconds / (1000 * 60);
 
   if (
     timeDifferenceInMinutes > Number(config.jwt.resetPasswordExpirationMinutes)
@@ -173,8 +179,8 @@ const verifyOtp = async (email, otp) => {
     throw new ApiError('OTP expired', 400);
   }
 
-  otpindb.is_verify = true;
-  otpindb.save();
+  otpindb.is_verified = true;
+  await otpindb.save();
   return;
 };
 
@@ -186,5 +192,6 @@ module.exports = {
   sendEmailOTP,
   checkVerifyOtp,
   sendPhoneOTP,
+  isVerifyOtp,
   sendSupportEmail
 };
